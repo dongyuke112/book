@@ -10,7 +10,7 @@
     //取到当前的坐标(google系坐标)
     function getUxLocation(callback) {
         callback = callback || function(ret){};
-        if(UxLocation.lat && UxLocation.lng && UxLocation.addr){
+        /*if(UxLocation.lat && UxLocation.lng && UxLocation.addr){
             Widget.MsgBox.hide();
             UxLocation["error"] = 0;
             callback(UxLocation);
@@ -36,7 +36,7 @@
                 //alert(e);
                 //Cookie中没有保存用户位置
             }
-        }
+        }*/
         // HTML5 geolocation.
         if(navigator.geolocation){
             navigator.geolocation.getCurrentPosition(function(position){
@@ -88,7 +88,7 @@
         }
     }
     $(document).ready(function () {
-        $('#l1').addClass('on');
+        //$('#l1').addClass('on');
         var now_city_name = localStorage.getItem("UxCity");
         if(!now_city_name){
             now_city_name = '选择城市';
