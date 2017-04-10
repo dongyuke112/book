@@ -87,7 +87,7 @@
             callback({"error":-1, "message":'Geolocation is not supported by this browser.'});
         }
     }
-    $(document).ready(function () {
+
         //$('#l1').addClass('on');
         var now_city_name = localStorage.getItem("UxCity");
         if(!now_city_name){
@@ -118,7 +118,7 @@
                 loadPageItem(LoadData.params);
             }
         });
-    });
+    
 
 </script>
 
