@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script>
+    //取到当前的坐标(google系坐标)
+    function getUxLocation(callback) {
+        callback = callback || function(ret){};
+        if(UxLocation.lat && UxLocation.lng && UxLocation.addr){
+            Widget.MsgBox.hide();
+            UxLocation["error"] = 0;
+            callback(UxLocation);
+            return true;
+        }else if(localStorage["UxLocation"]){
+            Widget.MsgBox.hide();
+            try{
+                uxl = JSON.parse(localStorage["UxLocation"]) || {};
+                if(uxl.lat && uxl.lng && uxl.addr){
+                    UxLocation = uxl;
+                    UxLocation["error"] = 0;
+                    callback(UxLocation);
+                    return true;
+                }
+
+                // UxLocation = JSON.parse(Cookie.get("UxLocation"));
+                // if(UxLocation.lat && UxLocation.lng && UxLocation.addr){
+                //     UxLocation["error"] = 0;
+                //     callback(UxLocation);
+                //     return true;
+                // }
+            }catch(e){
+                //alert(e);
+                //Cookie中没有保存用户位置
+            }
+        }
+        // HTML5 geolocation.
+        if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(function(position){
+                alert("SUCCESS:"+JSON.stringify(position));
+                var poi = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                UxLocation["lat"] = poi.lat;
+                UxLocation["lng"] = poi.lng;
+                //Cookie.set("UxLocation", JSON.stringify(UxLocation), 86400);
+                setUxLocation(UxLocation);
+                $.getJSON('/index.php?ctl=gmap&act=geocoder&lat='+poi.lat+"&lng="+poi.lng, function(ret){
+                    if(!ret.error){
+                        UxLocation['addr'] = ret.data.addr;
+                        UxLocation["error"] = 0;
+                        //Cookie.set("UxLocation", JSON.stringify(UxLocation), 86400);
+                        setUxLocation(UxLocation);
+                        callback(UxLocation);
+                    }
+                })
+            },function(error){
+                alert(error);
+                var e = [];
+                for(var a in error){
+                    e.push(a, error[a]);
+                }
+                alert(e);
+                alert("ERROR:"+JSON.stringify(error));
+                var error_msg = "";
+                switch (error.code){
+                    case error.PERMISSION_DENIED:
+                        error_msg = 'User denied the request for Geolocation.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        error_msg = '222Location information is unavailable.::'+error.code;
+                        break;
+                    case error.TIMEOUT:
+                        error_msg = 'The request to get user location timed out.';
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        error_msg = 'An unknown error occurred.';
+                        break;
+                }
+                callback({"error":error.code, "message":error_msg});
+            },{enableHighAccuracy:false});
+        }else{
+            callback({"error":-1, "message":'Geolocation is not supported by this browser.'});
+        }
+    }
+    $(document).ready(function () {
+        $('#l1').addClass('on');
+        var now_city_name = localStorage.getItem("UxCity");
+        if(!now_city_name){
+            now_city_name = '选择城市';
+        }
+        $('.this_city').text(now_city_name);
+        $('#position').text()=='定位中...'
+
+
+        var LocTimer = setTimeout(function(){
+            alert("获取不到你的地址");
+            window.location.href = "<{link ctl='position'}>";
+        }, 10000);
+        getUxLocation(function(ret){
+            clearTimeout(LocTimer);
+            if(ret.error){
+                alert(ret.message);
+                window.location.href = "<{link ctl='position'}>";
+            }else{
+                $('#position').text(ret.addr);
+                //地址处理
+                var link = "<{link ctl='index/get_addr'}>";
+                $.post(link, {lat:ret.lat,lng:ret.lng}, function (r) {
+                    if (r.error == 0) {
+                        $('.this_city').text(r.addr);
+                    }
+                }, 'json');
+                loadPageItem(LoadData.params);
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>
