@@ -90,14 +90,7 @@
     }
 
         //$('#l1').addClass('on');
-        var now_city_name = localStorage.getItem("UxCity");
-        if(!now_city_name){
-            now_city_name = '选择城市';
-        }
-        $('.this_city').text(now_city_name);
-        $('#position').text()=='定位中...'
-
-
+    
         var LocTimer = setTimeout(function(){
             alert("获取不到你的地址");
             window.location.href = "<{link ctl='position'}>";
